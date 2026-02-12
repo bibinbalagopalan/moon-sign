@@ -2,37 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Lunar Union</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
-        .glow-text { text-shadow: 0 0 20px rgba(191, 219, 254, 0.5); }
-        canvas { filter: contrast(1.1) brightness(1.1); }
+        .glow-text { text-shadow: 0 0 15px rgba(191, 219, 254, 0.6); }
+        canvas { filter: contrast(1.1) brightness(1.1); touch-action: none; }
+        body { margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
 <body class="bg-[#03050a] overflow-hidden font-serif">
 
-    <div class="absolute inset-0 z-10 flex flex-col items-center justify-between py-20 pointer-events-none">
-        <div class="text-center space-y-4 animate-fade-in">
-            <h1 class="text-white text-4xl font-extralight tracking-[0.8em] uppercase glow-text">Soulmates</h1>
-            <p class="text-blue-200/40 text-sm tracking-[0.4em] uppercase">Two halves of one light</p>
+    <div class="absolute inset-0 z-10 flex flex-col items-center justify-between py-12 md:py-20 pointer-events-none">
+        <div class="text-center space-y-2 md:space-y-4 px-4">
+            <h1 class="text-white text-2xl md:text-4xl font-extralight tracking-[0.4em] md:tracking-[0.8em] uppercase glow-text">Soulmates</h1>
+            <p class="text-blue-200/40 text-[10px] md:text-sm tracking-[0.3em] md:tracking-[0.4em] uppercase">Two halves of one light</p>
         </div>
 
-        <div class="flex flex-col items-center gap-8">
-            <div id="label-container" class="flex gap-24 text-[10px] tracking-[0.5em] uppercase text-white/30 transition-opacity duration-1000">
-                <span>Your Sign</span>
-                <span>Her Sign</span>
+        <div class="flex flex-col items-center gap-6 md:gap-8 mb-8 md:mb-0">
+            <div id="label-container" class="flex gap-12 md:gap-24 text-[9px] md:text-[10px] tracking-[0.3em] md:tracking-[0.5em] uppercase text-white/40 transition-opacity duration-1000">
+                <span>Bibi's Sign</span>
+                <span>Megha's Sign</span>
             </div>
             
-            <button id="unite-btn" class="pointer-events-auto group relative px-12 py-4 overflow-hidden rounded-full border border-white/10 bg-white/5 transition-all duration-1000">
+            <button id="unite-btn" class="pointer-events-auto group relative px-10 py-4 md:px-12 md:py-4 overflow-hidden rounded-full border border-white/10 bg-white/5 transition-all duration-1000 active:scale-95">
                 <div class="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span id="btn-text" class="relative text-white/80 tracking-[0.4em] text-xs uppercase transition-all group-hover:text-white">Begin the Union</span>
+                <span id="btn-text" class="relative text-white/80 tracking-[0.3em] md:tracking-[0.4em] text-[10px] md:text-xs uppercase transition-all group-hover:text-white">Begin the Union</span>
             </button>
         </div>
     </div>
 
-    <div id="container"></div>
+    <div id="container" class="w-full h-full"></div>
 
     <script type="importmap">
         { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
@@ -42,18 +43,18 @@
         import * as THREE from 'three';
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // Dynamic FOV for mobile (wider on portrait)
+        const fov = window.innerWidth < window.innerHeight ? 70 : 50;
+        const camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         document.getElementById('container').appendChild(renderer.domElement);
 
-        // Textures
         const loader = new THREE.TextureLoader();
         const moonMap = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg');
         
-        // The Moon - High quality, dark base
-        const geometry = new THREE.SphereGeometry(2, 128, 128);
+        const geometry = new THREE.SphereGeometry(2, 64, 64); // Reduced segments for mobile performance
         const material = new THREE.MeshStandardMaterial({ 
             map: moonMap,
             roughness: 0.8,
@@ -63,29 +64,29 @@
         const moon = new THREE.Mesh(geometry, material);
         scene.add(moon);
 
-        // Light Shard 1: Your Waxing Crescent (Cool Silver)
+        // Light Shard 1: Bibi (Cool Silver)
         const light1 = new THREE.PointLight(0x99bcff, 20, 15);
-        light1.position.set(6, 1, 2);
+        light1.position.set(5, 1, 2);
         scene.add(light1);
 
-        // Light Shard 2: Her Waxing Gibbous (Soft Rose/Gold)
+        // Light Shard 2: Megha (Soft Rose)
         const light2 = new THREE.PointLight(0xffb3cc, 40, 15);
-        light2.position.set(-6, -1, 2);
+        light2.position.set(-5, -1, 2);
         scene.add(light2);
 
-        // Background Star Dust
+        // Star Dust
         const starGeom = new THREE.BufferGeometry();
         const starCoords = [];
-        for(let i=0; i<8000; i++) {
+        for(let i=0; i<4000; i++) { // Slightly fewer stars for mobile performance
             starCoords.push((Math.random()-0.5)*150, (Math.random()-0.5)*150, (Math.random()-0.5)*150);
         }
         starGeom.setAttribute('position', new THREE.Float32BufferAttribute(starCoords, 3));
-        const stars = new THREE.Points(starGeom, new THREE.PointsMaterial({color: 0xffffff, size: 0.03, transparent: true, opacity: 0.5}));
+        const stars = new THREE.Points(starGeom, new THREE.PointsMaterial({color: 0xffffff, size: 0.05, transparent: true, opacity: 0.5}));
         scene.add(stars);
 
-        camera.position.z = 8;
+        // Adjust camera distance for mobile
+        camera.position.z = window.innerWidth < 768 ? 10 : 8;
 
-        // Interaction Logic
         let isUnited = false;
         const btn = document.getElementById('unite-btn');
         const btnText = document.getElementById('btn-text');
@@ -95,22 +96,20 @@
             isUnited = !isUnited;
             
             if(isUnited) {
-                // The Convergence
-                gsap.to(light1.position, { x: 0, y: 0, z: 5, duration: 4, ease: "power3.inOut" });
-                gsap.to(light2.position, { x: 0, y: 0, z: 5, duration: 4, ease: "power3.inOut" });
-                gsap.to(light1, { intensity: 50, duration: 4 });
-                gsap.to(light2, { intensity: 50, duration: 4 });
-                gsap.to(moon.scale, { x: 1.1, y: 1.1, z: 1.1, duration: 4, ease: "back.out(1.7)" });
+                gsap.to(light1.position, { x: 0, y: 0, z: 4, duration: 3, ease: "power3.inOut" });
+                gsap.to(light2.position, { x: 0, y: 0, z: 4, duration: 3, ease: "power3.inOut" });
+                gsap.to(light1, { intensity: 40, duration: 3 });
+                gsap.to(light2, { intensity: 40, duration: 3 });
+                gsap.to(moon.scale, { x: 1.15, y: 1.15, z: 1.15, duration: 3, ease: "back.out(1.2)" });
                 
                 btnText.innerText = "Bound Forever";
                 labels.style.opacity = "0";
             } else {
-                // The Separation
-                gsap.to(light1.position, { x: 6, y: 1, z: 2, duration: 3, ease: "power2.inOut" });
-                gsap.to(light2.position, { x: -6, y: -1, z: 2, duration: 3, ease: "power2.inOut" });
-                gsap.to(light1, { intensity: 20, duration: 3 });
-                gsap.to(light2, { intensity: 40, duration: 3 });
-                gsap.to(moon.scale, { x: 1, y: 1, z: 1, duration: 3 });
+                gsap.to(light1.position, { x: 5, y: 1, z: 2, duration: 2, ease: "power2.inOut" });
+                gsap.to(light2.position, { x: -5, y: -1, z: 2, duration: 2, ease: "power2.inOut" });
+                gsap.to(light1, { intensity: 20, duration: 2 });
+                gsap.to(light2, { intensity: 40, duration: 2 });
+                gsap.to(moon.scale, { x: 1, y: 1, z: 1, duration: 2 });
                 
                 btnText.innerText = "Begin the Union";
                 labels.style.opacity = "1";
@@ -119,13 +118,12 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            moon.rotation.y += 0.001;
+            moon.rotation.y += 0.0015;
             stars.rotation.y += 0.0001;
             
-            // Subtle pulse for "Living" feel
             const time = Date.now() * 0.001;
             if(isUnited) {
-                moon.position.y = Math.sin(time) * 0.05;
+                moon.position.y = Math.sin(time) * 0.08;
             }
             
             renderer.render(scene, camera);
@@ -133,9 +131,13 @@
         animate();
 
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.fov = width < height ? 70 : 50;
+            camera.position.z = width < 768 ? 10 : 8;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setSize(width, height);
         });
     </script>
 </body>
